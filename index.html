@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>USDT kaufen – sicher & schnell</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+      color: #333;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 0.2em;
+    }
+    p.payment {
+      text-align: center;
+      margin-bottom: 1em;
+      font-weight: bold;
+      font-size: 1.2em;
+      color: #0077cc;
+    }
+    a.paylink {
+      display: block;
+      width: fit-content;
+      margin: 0.5em auto 2em auto;
+      padding: 12px 25px;
+      background-color: #0077cc;
+      color: white;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 6px;
+      box-shadow: 0 4px 8px rgba(0, 119, 204, 0.3);
+      transition: background-color 0.3s ease;
+    }
+    a.paylink:hover {
+      background-color: #005fa3;
+    }
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 25px;
+      padding: 14px;
+      width: 100%;
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1.1em;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    .success {
+      color: green;
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+      display: none;
+    }
+    @media (max-width: 480px) {
+      body {
+        padding: 15px;
+      }
+      h2 {
+        font-size: 1.5em;
+      }
+      button {
+        font-size: 1em;
+        padding: 12px;
+      }
+      a.paylink {
+        padding: 10px 20px;
+        font-size: 1em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>USDT kaufen – sicher & schnell</h2>
+  <p class="payment">Zahle einfach <strong>50 € per Wise</strong> und erhalte USDT auf deine TRC20-Wallet.</p>
+  <a class="paylink" href="https://wise.com/pay/me/niaran" target="_blank" rel="noopener noreferrer">➡️ Jetzt 50 € per Wise zahlen</a>
+
+  <form id="usdtForm">
+    <label for="amount">Betrag in Euro (€):</label>
+    <input type="number" id="amount" required min="10" placeholder="z. B. 50" />
+
+    <label for="wallet">Deine TRC20-Wallet-Adresse:</label>
+    <input type="text" id="wallet" required placeholder="z. B. TXv1k..." />
+
+    <label for="contact">Dein Telegram oder E-Mail:</label>
+    <input type="text" id="contact" required placeholder="Telegram-Name oder E-Mail" />
+
+    <button type="submit">Bestellung absenden</button>
+  </form>
+
+  <div class="success" id="successMsg">✅ Deine Anfrage wurde gesendet. Wir melden uns bald!</div>
+
+  <script>
+    const botToken = "7565521192:AAHE7TssO0WiQsQGjmpoR1O9L0Md_kdH_wE";
+    const chatId = "6641312710";
+    const form = document.getElementById("usdtForm");
+    const successMsg = document.getElementById("successMsg");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const amount = document.getElementById("amount").value.trim();
+      const wallet = document.getElementById("wallet").value.trim();
+      const contact = document.getElementById("contact").value.trim();
+
+      if (amount < 10) {
+        alert("Bitte gib einen Betrag von mindestens 10 € ein.");
+        return;
+      }
+      if (!wallet || !contact) {
+        alert("Bitte fülle alle Felder aus.");
+        return;
+      }
+
+      const message = `🧾 *Neue USDT-Bestellung:*\n\n💶 *Betrag:* ${amount} €\n🪙 *Wallet (TRC20):* ${wallet}\n📩 *Kontakt:* ${contact}`;
+
+      const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+      try {
+        const response = await fetch(telegramUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: message,
+            parse_mode: "Markdown"
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error("Fehler beim Senden an Telegram");
+        }
+
+        form.style.display = "none";
+        successMsg.style.display = "block";
+      } catch (error) {
+        alert("Es gab ein Problem beim Senden der Bestellung. Bitte versuche es später erneut.");
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -19,10 +19,21 @@
     }
     p.payment {
       text-align: center;
-      margin-bottom: 1em;
       font-weight: bold;
-      font-size: 1.2em;
+      font-size: 1.15em;
       color: #0077cc;
+      margin-bottom: 1em;
+      line-height: 1.4;
+    }
+    .examples {
+      background: #e6f0ff;
+      border: 1px solid #0077cc;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 20px;
+      font-size: 1em;
+      color: #004080;
+      line-height: 1.4;
     }
     a.paylink {
       display: block;
@@ -83,6 +94,12 @@
       font-weight: bold;
       display: none;
     }
+    .info {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 5px;
+      text-align: center;
+    }
     @media (max-width: 480px) {
       body {
         padding: 15px;
@@ -103,18 +120,29 @@
 </head>
 <body>
   <h2>USDT kaufen – sicher & schnell</h2>
-  <p class="payment">Zahle einfach <strong>50 € per Wise</strong> und erhalte USDT auf deine TRC20-Wallet.</p>
-  <a class="paylink" href="https://wise.com/pay/me/niaran" target="_blank" rel="noopener noreferrer">➡️ Jetzt 50 € per Wise zahlen</a>
+  <p class="payment">
+    ✅ Schneller & sicherer USDT-Kauf über Wise<br/>
+    💱 Kurs: <strong>1 € = 1.20 USDT</strong> (TRC20)<br/>
+    🕑 Lieferung in 1–2 Stunden
+  </p>
+
+  <div class="examples">
+    Beispielpreise:<br/>
+    300 € → 360 USDT<br/>
+    500 € → 600 USDT
+  </div>
+
+  <a class="paylink" href="https://wise.com/pay/me/niaran" target="_blank" rel="noopener noreferrer">➡️ Jetzt per Wise bezahlen</a>
 
   <form id="usdtForm">
-    <label for="amount">Betrag in Euro (€):</label>
-    <input type="number" id="amount" required min="10" placeholder="z. B. 50" />
+    <label for="amount">Betrag in Euro (€) – Mindestbestellung 50 €:</label>
+    <input type="number" id="amount" name="amount" min="50" required placeholder="z. B. 50" />
 
     <label for="wallet">Deine TRC20-Wallet-Adresse:</label>
-    <input type="text" id="wallet" required placeholder="z. B. TXv1k..." />
+    <input type="text" id="wallet" name="wallet" required placeholder="z. B. TXv1k..." />
 
     <label for="contact">Dein Telegram oder E-Mail:</label>
-    <input type="text" id="contact" required placeholder="Telegram-Name oder E-Mail" />
+    <input type="text" id="contact" name="contact" required placeholder="Telegram-Name oder E-Mail" />
 
     <button type="submit">Bestellung absenden</button>
   </form>
@@ -124,49 +152,68 @@
   <script>
     const botToken = "7565521192:AAHE7TssO0WiQsQGjmpoR1O9L0Md_kdH_wE";
     const chatId = "6641312710";
+    const rate = 1.20;
+
     const form = document.getElementById("usdtForm");
-    const successMsg = document.getElementById("successMsg");
+    const estimate = document.createElement("p");
+    estimate.style.textAlign = "center";
+    estimate.style.marginTop = "10px";
+    estimate.style.fontWeight = "bold";
+    estimate.style.color = "#0077cc";
+
+    const amountInput = document.getElementById("amount");
+    amountInput.parentNode.insertBefore(estimate, amountInput.nextSibling);
+
+    amountInput.addEventListener("input", () => {
+      const euro = parseFloat(amountInput.value);
+      if (euro >= 50) {
+        const usdt = (euro * rate).toFixed(2);
+        estimate.textContent = `💱 Für ${euro} € bekommst du ca. ${usdt} USDT (TRC20)`;
+      } else {
+        estimate.textContent = "Bitte gib mindestens 50 € ein.";
+      }
+    });
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      const amount = document.getElementById("amount").value.trim();
+      const amount = parseFloat(document.getElementById("amount").value.trim());
       const wallet = document.getElementById("wallet").value.trim();
       const contact = document.getElementById("contact").value.trim();
 
-      if (amount < 10) {
-        alert("Bitte gib einen Betrag von mindestens 10 € ein.");
+      if (isNaN(amount) || amount < 50) {
+        alert("Bitte gib einen Betrag von mindestens 50 € ein.");
         return;
       }
-      if (!wallet || !contact) {
-        alert("Bitte fülle alle Felder aus.");
+      if (!wallet) {
+        alert("Bitte gib deine TRC20-Wallet-Adresse ein.");
+        return;
+      }
+      if (!contact) {
+        alert("Bitte gib deinen Telegram-Namen oder deine E-Mail ein.");
         return;
       }
 
-      const message = `🧾 *Neue USDT-Bestellung:*\n\n💶 *Betrag:* ${amount} €\n🪙 *Wallet (TRC20):* ${wallet}\n📩 *Kontakt:* ${contact}`;
+      const usdt = (amount * rate).toFixed(2);
+      const message = `🧾 *Neue USDT-Bestellung:*\n\n💶 *Betrag:* ${amount} €\n💸 *USDT (TRC20):* ca. ${usdt}\n🪙 *Wallet:* ${wallet}\n📩 *Kontakt:* ${contact}`;
 
-      const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
       try {
-        const response = await fetch(telegramUrl, {
+        const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             chat_id: chatId,
             text: message,
             parse_mode: "Markdown"
-          })
+          }),
         });
 
-        if (!response.ok) {
-          throw new Error("Fehler beim Senden an Telegram");
-        }
+        if (!response.ok) throw new Error("Telegram-Fehler");
 
         form.style.display = "none";
-        successMsg.style.display = "block";
+        estimate.style.display = "none";
+        document.getElementById("successMsg").style.display = "block";
       } catch (error) {
-        alert("Es gab ein Problem beim Senden der Bestellung. Bitte versuche es später erneut.");
+        alert("Fehler beim Senden der Bestellung. Bitte versuche es später erneut.");
         console.error(error);
       }
     });
